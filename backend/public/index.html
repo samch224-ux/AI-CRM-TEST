@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -21,7 +22,7 @@
     }
     .container {
       width: 100%;
-      max-width: 800px;
+      max-width: 1000px;
       background: #fff;
       border-radius: 16px;
       box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06);
@@ -51,20 +52,13 @@
       width: auto;
       box-shadow: none;
     }
-    .tab:hover {
-      background: #f1f5f9;
-      color: #334155;
-      transform: none;
-    }
-    .tab.active {
-      color: #2563eb;
-      background: #eff6ff;
-    }
+    .tab:hover { background: #f1f5f9; color: #334155; transform: none; }
+    .tab.active { color: #2563eb; background: #eff6ff; }
     
-    /* 内容区域 */
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     
+    /* 分析页面 */
     label { display: block; font-size: 0.875rem; font-weight: 500; color: #334155; margin-bottom: 8px; }
     textarea {
       width: 100%;
@@ -98,17 +92,10 @@
       box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
     }
     button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); }
-    button:active { transform: translateY(0); }
     button:disabled { opacity: 0.85; cursor: not-allowed; transform: none; }
-    button.secondary {
-      background: #f1f5f9;
-      color: #475569;
-      box-shadow: none;
-    }
+    button.secondary { background: #f1f5f9; color: #475569; box-shadow: none; }
     button.secondary:hover { background: #e2e8f0; box-shadow: none; }
-    button.danger {
-      background: #ef4444;
-    }
+    button.danger { background: #ef4444; }
     button.danger:hover { background: #dc2626; }
     
     .result {
@@ -126,10 +113,10 @@
     .result.loading { color: #64748b; text-align: center; }
     .result.error { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
     .result.success { background: #f0fdf4; border-color: #bbf7d0; }
-    .result-title { font-weight: 600; color: #0f172a; margin-bottom: 10px; font-size: 0.9375rem; }
+    .result-title { font-weight: 600; color: #0f172a; margin-bottom: 10px; }
     .result-content { white-space: pre-wrap; word-break: break-word; }
     
-    /* 历史记录列表 */
+    /* 历史记录 */
     .history-list { max-height: 500px; overflow-y: auto; }
     .history-item {
       padding: 16px;
@@ -155,30 +142,54 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .history-empty {
+    .history-empty { text-align: center; padding: 40px; color: #94a3b8; }
+    .history-actions { display: flex; gap: 8px; margin-bottom: 16px; }
+    .history-actions button { flex: 1; padding: 8px 16px; font-size: 0.875rem; }
+    
+    /* 统计页面 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: #fff;
+      padding: 20px;
+      border-radius: 12px;
       text-align: center;
-      padding: 40px;
-      color: #94a3b8;
     }
-    .history-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 16px;
+    .stat-card.purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+    .stat-card.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .stat-card.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .stat-value { font-size: 2rem; font-weight: 700; margin-bottom: 4px; }
+    .stat-label { font-size: 0.875rem; opacity: 0.9; }
+    
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
     }
-    .history-actions button {
-      flex: 1;
-      padding: 8px 16px;
-      font-size: 0.875rem;
+    .chart-container {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .chart-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 16px;
     }
     
-    /* 详情弹窗 */
+    /* 弹窗 */
     .modal {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.5);
       z-index: 1000;
       align-items: center;
@@ -203,21 +214,16 @@
     }
     .modal-title { font-size: 1.125rem; font-weight: 600; }
     .modal-close {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      color: #64748b;
-      cursor: pointer;
-      width: auto;
-      padding: 0;
+      background: none; border: none;
+      font-size: 1.5rem; color: #64748b;
+      cursor: pointer; width: auto; padding: 0;
       box-shadow: none;
     }
     .modal-close:hover { color: #334155; }
     
     .spinner {
       display: inline-block;
-      width: 20px;
-      height: 20px;
+      width: 20px; height: 20px;
       border: 2px solid #e2e8f0;
       border-top-color: #3b82f6;
       border-radius: 50%;
@@ -226,6 +232,7 @@
       vertical-align: middle;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    
     .status-bar {
       margin-top: 16px;
       padding: 8px 12px;
@@ -250,17 +257,16 @@
     <div class="tabs">
       <button class="tab active" data-tab="analyze">📝 分析</button>
       <button class="tab" data-tab="history">📚 历史记录</button>
+      <button class="tab" data-tab="statistics">📊 数据统计</button>
     </div>
     
     <!-- 分析页面 -->
     <div id="analyze-tab" class="tab-content active">
       <label for="chat-input">聊天记录</label>
       <textarea id="chat-input" placeholder="例如：&#10;客户：你好，我想咨询一下产品价格&#10;客服：您好，请问您关注的是哪款产品？&#10;客户：A 系列标准版，多少钱？"></textarea>
-      
       <div class="btn-wrap">
         <button type="button" id="analyze-btn">🚀 AI 分析</button>
       </div>
-      
       <div id="result" class="result">
         <div class="result-title">分析结果</div>
         <div class="result-content" id="result-content"></div>
@@ -273,8 +279,45 @@
         <button type="button" class="secondary" id="refresh-history">🔄 刷新</button>
         <button type="button" class="danger" id="clear-history">🗑️ 清空全部</button>
       </div>
-      <div id="history-list" class="history-list" style="margin-top: 16px;">
+      <div id="history-list" class="history-list">
         <div class="history-empty">暂无历史记录</div>
+      </div>
+    </div>
+    
+    <!-- 数据统计页面 -->
+    <div id="statistics-tab" class="tab-content">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">总分析次数</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-value" id="stat-positive">0</div>
+          <div class="stat-label">积极情绪</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-value" id="stat-negative">0</div>
+          <div class="stat-label">消极情绪</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-value" id="stat-purchase">0</div>
+          <div class="stat-label">购买意向</div>
+        </div>
+      </div>
+      
+      <div class="charts-grid">
+        <div class="chart-container">
+          <div class="chart-title">情绪分布</div>
+          <canvas id="sentimentChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <div class="chart-title">客户意图分布</div>
+          <canvas id="intentChart"></canvas>
+        </div>
+        <div class="chart-container" style="grid-column: 1 / -1;">
+          <div class="chart-title">分析趋势（最近30天）</div>
+          <canvas id="trendChart"></canvas>
+        </div>
       </div>
     </div>
     
@@ -298,6 +341,7 @@
   <script>
     (function () {
       const API_BASE = window.location.origin;
+      let sentimentChart, intentChart, trendChart;
       
       // DOM 元素
       const tabs = document.querySelectorAll('.tab');
@@ -323,34 +367,33 @@
           tab.classList.add('active');
           document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
           
-          if (tab.dataset.tab === 'history') {
-            loadHistory();
-          }
+          if (tab.dataset.tab === 'history') loadHistory();
+          if (tab.dataset.tab === 'statistics') loadStatistics();
         });
       });
       
       // 检查后端状态
       async function checkHealth() {
         try {
-          const response = await fetch(`${API_BASE}/health`, { method: 'GET' });
+          const response = await fetch(`${API_BASE}/health`);
           if (response.ok) {
             statusDot.classList.remove('offline');
             statusText.textContent = 'AI 服务已连接';
-          } else { throw new Error('服务异常'); }
+          } else throw new Error('服务异常');
         } catch (error) {
           statusDot.classList.add('offline');
-          statusText.textContent = 'AI 服务未连接 - 请启动后端服务';
+          statusText.textContent = 'AI 服务未连接';
         }
       }
       
       // 分析功能
       analyzeBtn.addEventListener('click', async function () {
         const text = chatInput.value.trim();
-        if (!text) { showResult('请先输入或粘贴客户聊天记录', 'error'); return; }
+        if (!text) { showResult('请先输入聊天记录', 'error'); return; }
         
         analyzeBtn.disabled = true;
         analyzeBtn.textContent = '分析中...';
-        showResult('<span class="spinner"></span>正在调用 Kimi AI 分析，请稍候...', 'loading');
+        showResult('<span class="spinner"></span>AI 分析中...', 'loading');
         
         try {
           const response = await fetch(`${API_BASE}/api/analyze`, {
@@ -362,7 +405,7 @@
           if (!response.ok) throw new Error(data.error || '分析失败');
           showResult(data.analysis, 'success');
         } catch (error) {
-          showResult('❌ ' + error.message + '\n\n请检查：\n1. 后端服务是否已启动\n2. 网络连接是否正常', 'error');
+          showResult('❌ ' + error.message, 'error');
         } finally {
           analyzeBtn.disabled = false;
           analyzeBtn.textContent = '🚀 AI 分析';
@@ -377,12 +420,11 @@
       // 加载历史记录
       async function loadHistory() {
         historyList.innerHTML = '<div class="history-empty"><span class="spinner"></span>加载中...</div>';
-        
         try {
           const response = await fetch(`${API_BASE}/api/history`);
           const data = await response.json();
           
-          if (!data.success || !data.history || data.history.length === 0) {
+          if (!data.success || !data.history?.length) {
             historyList.innerHTML = '<div class="history-empty">暂无历史记录</div>';
             return;
           }
@@ -396,13 +438,11 @@
             </div>
           `).join('');
           
-          // 点击历史记录查看详情
           document.querySelectorAll('.history-item').forEach(item => {
             item.addEventListener('click', () => showDetail(item.dataset.id, data.history));
           });
-          
         } catch (error) {
-          historyList.innerHTML = '<div class="history-empty">加载失败，请刷新重试</div>';
+          historyList.innerHTML = '<div class="history-empty">加载失败</div>';
         }
       }
       
@@ -413,63 +453,140 @@
         
         modalBody.innerHTML = `
           <div style="margin-bottom: 16px;">
-            <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">分析时间</div>
+            <div style="font-size: 0.75rem; color: #64748b;">分析时间</div>
             <div>${formatDate(item.timestamp)}</div>
           </div>
           <div style="margin-bottom: 16px;">
-            <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">聊天记录</div>
+            <div style="font-size: 0.75rem; color: #64748b;">聊天记录</div>
             <div style="background: #f8fafc; padding: 12px; border-radius: 8px; white-space: pre-wrap;">${escapeHtml(item.chatContent)}</div>
           </div>
           <div>
-            <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">分析结果</div>
+            <div style="font-size: 0.75rem; color: #64748b;">分析结果</div>
             <div style="background: #f0fdf4; padding: 12px; border-radius: 8px; white-space: pre-wrap;">${escapeHtml(item.analysis)}</div>
           </div>
           <div style="margin-top: 16px;">
-            <button type="button" class="danger" onclick="deleteHistory('${item.id}')">🗑️ 删除此记录</button>
+            <button type="button" class="danger" onclick="deleteHistory('${item.id}')">🗑️ 删除</button>
           </div>
         `;
         modal.classList.add('visible');
       }
       
-      // 删除单条记录
       window.deleteHistory = async function(id) {
-        if (!confirm('确定要删除这条记录吗？')) return;
-        
+        if (!confirm('确定删除？')) return;
         try {
-          const response = await fetch(`${API_BASE}/api/history/${id}`, { method: 'DELETE' });
-          if (response.ok) {
-            modal.classList.remove('visible');
-            loadHistory();
-          }
+          await fetch(`${API_BASE}/api/history/${id}`, { method: 'DELETE' });
+          modal.classList.remove('visible');
+          loadHistory();
         } catch (error) {
           alert('删除失败');
         }
       };
       
-      // 刷新历史记录
       refreshHistoryBtn.addEventListener('click', loadHistory);
-      
-      // 清空全部历史
       clearHistoryBtn.addEventListener('click', async function () {
-        if (!confirm('确定要清空所有历史记录吗？此操作不可恢复！')) return;
-        
+        if (!confirm('确定清空所有记录？')) return;
         try {
-          const response = await fetch(`${API_BASE}/api/history`, { method: 'DELETE' });
-          if (response.ok) {
-            loadHistory();
-          }
+          await fetch(`${API_BASE}/api/history`, { method: 'DELETE' });
+          loadHistory();
         } catch (error) {
           alert('清空失败');
         }
       });
       
-      // 关闭弹窗
       modalClose.addEventListener('click', () => modal.classList.remove('visible'));
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.classList.remove('visible');
-      });
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('visible'); });
       
-      // 工具函数
+      // 加载统计数据
+      async function loadStatistics() {
+        try {
+          const response = await fetch(`${API_BASE}/api/statistics`);
+          const data = await response.json();
+          
+          if (!data.success) {
+            console.error('加载统计失败');
+            return;
+          }
+          
+          const stats = data.statistics;
+          
+          // 更新统计卡片
+          document.getElementById('stat-total').textContent = stats.totalCount;
+          document.getElementById('stat-positive').textContent = stats.sentimentDistribution.positive;
+          document.getElementById('stat-negative').textContent = stats.sentimentDistribution.negative;
+          document.getElementById('stat-purchase').textContent = stats.intentDistribution.purchase;
+          
+          // 销毁旧图表
+          if (sentimentChart) sentimentChart.destroy();
+          if (intentChart) intentChart.destroy();
+          if (trendChart) trendChart.destroy();
+          
+          // 情绪分布饼图
+          const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+          sentimentChart = new Chart(sentimentCtx, {
+            type: 'doughnut',
+            data: {
+              labels: ['积极', '中性', '消极', '未知'],
+              datasets: [{
+                data: [
+                  stats.sentimentDistribution.positive,
+                  stats.sentimentDistribution.neutral,
+                  stats.sentimentDistribution.negative,
+                  stats.sentimentDistribution.unknown
+                ],
+                backgroundColor: ['#10b981', '#6b7280', '#ef4444', '#e5e7eb']
+              }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+          });
+          
+          // 意图分布饼图
+          const intentCtx = document.getElementById('intentChart').getContext('2d');
+          intentChart = new Chart(intentCtx, {
+            type: 'doughnut',
+            data: {
+              labels: ['购买', '咨询', '投诉', '其他', '未知'],
+              datasets: [{
+                data: [
+                  stats.intentDistribution.purchase,
+                  stats.intentDistribution.inquiry,
+                  stats.intentDistribution.complaint,
+                  stats.intentDistribution.other,
+                  stats.intentDistribution.unknown
+                ],
+                backgroundColor: ['#3b82f6', '#8b5cf6', '#ef4444', '#f59e0b', '#e5e7eb']
+              }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+          });
+          
+          // 趋势折线图
+          const trendCtx = document.getElementById('trendChart').getContext('2d');
+          trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+              labels: stats.dailyTrend.map(d => d.date.slice(5)), // 显示 MM-DD
+              datasets: [{
+                label: '分析次数',
+                data: stats.dailyTrend.map(d => d.count),
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4
+              }]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+              }
+            }
+          });
+          
+        } catch (error) {
+          console.error('加载统计失败:', error);
+        }
+      }
+      
       function escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
@@ -477,16 +594,11 @@
       }
       
       function formatDate(isoString) {
-        const date = new Date(isoString);
-        return date.toLocaleString('zh-CN', {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
+        return new Date(isoString).toLocaleString('zh-CN', {
+          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
         });
       }
       
-      // 初始化
       checkHealth();
     })();
   </script>
