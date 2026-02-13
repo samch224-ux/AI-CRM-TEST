@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>客户聊天记录分析 - AI CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: "Noto Sans SC", -apple-system, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(145deg, #f0f4f8 0%, #e2e8f0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: #1e293b;
+    }
+    .container {
+      width: 100%;
+      max-width: 560px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06);
+      padding: 32px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      padding: 14px 16px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      color: #1e293b;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      resize: vertical;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    textarea::placeholder {
+      color: #94a3b8;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+    .btn-wrap {
+      margin-top: 20px;
+    }
+    button {
+      width: 100%;
+      padding: 12px 20px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: #fff;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    button:disabled {
+      opacity: 0.85;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .result {
+      margin-top: 24px;
+      padding: 20px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 0.9375rem;
+      line-height: 1.65;
+      color: #334155;
+      display: none;
+    }
+    .result.visible {
+      display: block;
+    }
+    .result.loading {
+      color: #64748b;
+      text-align: center;
+    }
+    .result.error {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #dc2626;
+    }
+    .result.success {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+    .result-title {
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 10px;
+      font-size: 0.9375rem;
+    }
+    .result-content {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e2e8f0;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .status-bar {
+      margin-top: 16px;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+    .status-dot.offline {
+      background: #ef4444;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>客户聊天记录分析</h1>
+    <p class="subtitle">粘贴或输入聊天内容，AI 自动分析摘要与要点</p>
+    
+    <label for="chat-input">聊天记录</label>
+    <textarea id="chat-input" placeholder="例如：&#10;客户：你好，我想咨询一下产品价格&#10;客服：您好，请问您关注的是哪款产品？&#10;客户：A 系列标准版，多少钱？"></textarea>
+    
+    <div class="btn-wrap">
+      <button type="button" id="analyze-btn">🚀 AI 分析</button>
+    </div>
+    
+    <div id="result" class="result">
+      <div class="result-title">分析结果</div>
+      <div class="result-content" id="result-content"></div>
+    </div>
+    
+    <div class="status-bar">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">连接中...</span>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const API_BASE = window.location.origin;
+      const chatInput = document.getElementById('chat-input');
+      const analyzeBtn = document.getElementById('analyze-btn');
+      const resultEl = document.getElementById('result');
+      const resultContent = document.getElementById('result-content');
+      const statusDot = document.getElementById('status-dot');
+      const statusText = document.getElementById('status-text');
+
+      // 检查后端状态
+      async function checkHealth() {
+        try {
+          const response = await fetch(`${API_BASE}/health`, { method: 'GET' });
+          if (response.ok) {
+            statusDot.classList.remove('offline');
+            statusText.textContent = 'AI 服务已连接';
+          } else {
+            throw new Error('服务异常');
+          }
+        } catch (error) {
+          statusDot.classList.add('offline');
+          statusText.textContent = 'AI 服务未连接 - 请启动后端服务';
+        }
+      }
+
+      // 分析功能
+      analyzeBtn.addEventListener('click', async function () {
+        const text = chatInput.value.trim();
+        
+        if (!text) {
+          showResult('请先输入或粘贴客户聊天记录', 'error');
+          return;
+        }
+
+        // 显示加载状态
+        analyzeBtn.disabled = true;
+        analyzeBtn.textContent = '分析中...';
+        showResult('<span class="spinner"></span>正在调用 Kimi AI 分析，请稍候...', 'loading');
+
+        try {
+          const response = await fetch(`${API_BASE}/api/analyze`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ chatContent: text })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || '分析失败');
+          }
+
+          showResult(data.analysis, 'success');
+
+        } catch (error) {
+          console.error('分析错误:', error);
+          showResult('❌ ' + error.message + '\n\n请检查：\n1. 后端服务是否已启动\n2. 网络连接是否正常', 'error');
+        } finally {
+          analyzeBtn.disabled = false;
+          analyzeBtn.textContent = '🚀 AI 分析';
+        }
+      });
+
+      function showResult(content, type) {
+        resultEl.className = 'result visible ' + type;
+        resultContent.innerHTML = content;
+      }
+
+      // 页面加载时检查状态
+      checkHealth();
+    })();
+  </script>
+</body>
+</html>
