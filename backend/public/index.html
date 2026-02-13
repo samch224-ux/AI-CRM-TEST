@@ -21,7 +21,7 @@
     }
     .container {
       width: 100%;
-      max-width: 560px;
+      max-width: 800px;
       background: #fff;
       border-radius: 16px;
       box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06);
@@ -29,6 +29,42 @@
     }
     h1 { font-size: 1.5rem; font-weight: 600; color: #0f172a; margin-bottom: 8px; }
     .subtitle { font-size: 0.875rem; color: #64748b; margin-bottom: 24px; }
+    
+    /* 标签页 */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 2px;
+    }
+    .tab {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: #64748b;
+      cursor: pointer;
+      border-radius: 8px 8px 0 0;
+      transition: all 0.2s;
+      width: auto;
+      box-shadow: none;
+    }
+    .tab:hover {
+      background: #f1f5f9;
+      color: #334155;
+      transform: none;
+    }
+    .tab.active {
+      color: #2563eb;
+      background: #eff6ff;
+    }
+    
+    /* 内容区域 */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
     label { display: block; font-size: 0.875rem; font-weight: 500; color: #334155; margin-bottom: 8px; }
     textarea {
       width: 100%;
@@ -64,6 +100,17 @@
     button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); }
     button:active { transform: translateY(0); }
     button:disabled { opacity: 0.85; cursor: not-allowed; transform: none; }
+    button.secondary {
+      background: #f1f5f9;
+      color: #475569;
+      box-shadow: none;
+    }
+    button.secondary:hover { background: #e2e8f0; box-shadow: none; }
+    button.danger {
+      background: #ef4444;
+    }
+    button.danger:hover { background: #dc2626; }
+    
     .result {
       margin-top: 24px;
       padding: 20px;
@@ -81,6 +128,92 @@
     .result.success { background: #f0fdf4; border-color: #bbf7d0; }
     .result-title { font-weight: 600; color: #0f172a; margin-bottom: 10px; font-size: 0.9375rem; }
     .result-content { white-space: pre-wrap; word-break: break-word; }
+    
+    /* 历史记录列表 */
+    .history-list { max-height: 500px; overflow-y: auto; }
+    .history-item {
+      padding: 16px;
+      margin-bottom: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .history-item:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .history-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .history-date { font-size: 0.75rem; color: #64748b; }
+    .history-preview {
+      font-size: 0.875rem;
+      color: #475569;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .history-empty {
+      text-align: center;
+      padding: 40px;
+      color: #94a3b8;
+    }
+    .history-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .history-actions button {
+      flex: 1;
+      padding: 8px 16px;
+      font-size: 0.875rem;
+    }
+    
+    /* 详情弹窗 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal.visible { display: flex; }
+    .modal-content {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-title { font-size: 1.125rem; font-weight: 600; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #64748b;
+      cursor: pointer;
+      width: auto;
+      padding: 0;
+      box-shadow: none;
+    }
+    .modal-close:hover { color: #334155; }
+    
     .spinner {
       display: inline-block;
       width: 20px;
@@ -111,18 +244,38 @@
 <body>
   <div class="container">
     <h1>客户聊天记录分析</h1>
-    <p class="subtitle">粘贴或输入聊天内容，AI 自动分析摘要与要点</p>
+    <p class="subtitle">AI 智能分析客户对话，自动提取关键信息</p>
     
-    <label for="chat-input">聊天记录</label>
-    <textarea id="chat-input" placeholder="例如：&#10;客户：你好，我想咨询一下产品价格&#10;客服：您好，请问您关注的是哪款产品？&#10;客户：A 系列标准版，多少钱？"></textarea>
-    
-    <div class="btn-wrap">
-      <button type="button" id="analyze-btn">🚀 AI 分析</button>
+    <!-- 标签页 -->
+    <div class="tabs">
+      <button class="tab active" data-tab="analyze">📝 分析</button>
+      <button class="tab" data-tab="history">📚 历史记录</button>
     </div>
     
-    <div id="result" class="result">
-      <div class="result-title">分析结果</div>
-      <div class="result-content" id="result-content"></div>
+    <!-- 分析页面 -->
+    <div id="analyze-tab" class="tab-content active">
+      <label for="chat-input">聊天记录</label>
+      <textarea id="chat-input" placeholder="例如：&#10;客户：你好，我想咨询一下产品价格&#10;客服：您好，请问您关注的是哪款产品？&#10;客户：A 系列标准版，多少钱？"></textarea>
+      
+      <div class="btn-wrap">
+        <button type="button" id="analyze-btn">🚀 AI 分析</button>
+      </div>
+      
+      <div id="result" class="result">
+        <div class="result-title">分析结果</div>
+        <div class="result-content" id="result-content"></div>
+      </div>
+    </div>
+    
+    <!-- 历史记录页面 -->
+    <div id="history-tab" class="tab-content">
+      <div class="history-actions">
+        <button type="button" class="secondary" id="refresh-history">🔄 刷新</button>
+        <button type="button" class="danger" id="clear-history">🗑️ 清空全部</button>
+      </div>
+      <div id="history-list" class="history-list" style="margin-top: 16px;">
+        <div class="history-empty">暂无历史记录</div>
+      </div>
     </div>
     
     <div class="status-bar">
@@ -130,17 +283,53 @@
       <span id="status-text">连接中...</span>
     </div>
   </div>
+  
+  <!-- 详情弹窗 -->
+  <div id="detail-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">分析详情</div>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
 
   <script>
     (function () {
       const API_BASE = window.location.origin;
+      
+      // DOM 元素
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
       const chatInput = document.getElementById('chat-input');
       const analyzeBtn = document.getElementById('analyze-btn');
       const resultEl = document.getElementById('result');
       const resultContent = document.getElementById('result-content');
       const statusDot = document.getElementById('status-dot');
       const statusText = document.getElementById('status-text');
-
+      const historyList = document.getElementById('history-list');
+      const refreshHistoryBtn = document.getElementById('refresh-history');
+      const clearHistoryBtn = document.getElementById('clear-history');
+      const modal = document.getElementById('detail-modal');
+      const modalClose = document.getElementById('modal-close');
+      const modalBody = document.getElementById('modal-body');
+      
+      // 标签页切换
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+          
+          if (tab.dataset.tab === 'history') {
+            loadHistory();
+          }
+        });
+      });
+      
+      // 检查后端状态
       async function checkHealth() {
         try {
           const response = await fetch(`${API_BASE}/health`, { method: 'GET' });
@@ -153,15 +342,16 @@
           statusText.textContent = 'AI 服务未连接 - 请启动后端服务';
         }
       }
-
+      
+      // 分析功能
       analyzeBtn.addEventListener('click', async function () {
         const text = chatInput.value.trim();
         if (!text) { showResult('请先输入或粘贴客户聊天记录', 'error'); return; }
-
+        
         analyzeBtn.disabled = true;
         analyzeBtn.textContent = '分析中...';
         showResult('<span class="spinner"></span>正在调用 Kimi AI 分析，请稍候...', 'loading');
-
+        
         try {
           const response = await fetch(`${API_BASE}/api/analyze`, {
             method: 'POST',
@@ -178,12 +368,125 @@
           analyzeBtn.textContent = '🚀 AI 分析';
         }
       });
-
+      
       function showResult(content, type) {
         resultEl.className = 'result visible ' + type;
         resultContent.innerHTML = content;
       }
-
+      
+      // 加载历史记录
+      async function loadHistory() {
+        historyList.innerHTML = '<div class="history-empty"><span class="spinner"></span>加载中...</div>';
+        
+        try {
+          const response = await fetch(`${API_BASE}/api/history`);
+          const data = await response.json();
+          
+          if (!data.success || !data.history || data.history.length === 0) {
+            historyList.innerHTML = '<div class="history-empty">暂无历史记录</div>';
+            return;
+          }
+          
+          historyList.innerHTML = data.history.map(item => `
+            <div class="history-item" data-id="${item.id}">
+              <div class="history-item-header">
+                <span class="history-preview">${escapeHtml(item.chatContent)}</span>
+                <span class="history-date">${formatDate(item.timestamp)}</span>
+              </div>
+            </div>
+          `).join('');
+          
+          // 点击历史记录查看详情
+          document.querySelectorAll('.history-item').forEach(item => {
+            item.addEventListener('click', () => showDetail(item.dataset.id, data.history));
+          });
+          
+        } catch (error) {
+          historyList.innerHTML = '<div class="history-empty">加载失败，请刷新重试</div>';
+        }
+      }
+      
+      // 显示详情
+      function showDetail(id, history) {
+        const item = history.find(h => h.id === id);
+        if (!item) return;
+        
+        modalBody.innerHTML = `
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">分析时间</div>
+            <div>${formatDate(item.timestamp)}</div>
+          </div>
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">聊天记录</div>
+            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; white-space: pre-wrap;">${escapeHtml(item.chatContent)}</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">分析结果</div>
+            <div style="background: #f0fdf4; padding: 12px; border-radius: 8px; white-space: pre-wrap;">${escapeHtml(item.analysis)}</div>
+          </div>
+          <div style="margin-top: 16px;">
+            <button type="button" class="danger" onclick="deleteHistory('${item.id}')">🗑️ 删除此记录</button>
+          </div>
+        `;
+        modal.classList.add('visible');
+      }
+      
+      // 删除单条记录
+      window.deleteHistory = async function(id) {
+        if (!confirm('确定要删除这条记录吗？')) return;
+        
+        try {
+          const response = await fetch(`${API_BASE}/api/history/${id}`, { method: 'DELETE' });
+          if (response.ok) {
+            modal.classList.remove('visible');
+            loadHistory();
+          }
+        } catch (error) {
+          alert('删除失败');
+        }
+      };
+      
+      // 刷新历史记录
+      refreshHistoryBtn.addEventListener('click', loadHistory);
+      
+      // 清空全部历史
+      clearHistoryBtn.addEventListener('click', async function () {
+        if (!confirm('确定要清空所有历史记录吗？此操作不可恢复！')) return;
+        
+        try {
+          const response = await fetch(`${API_BASE}/api/history`, { method: 'DELETE' });
+          if (response.ok) {
+            loadHistory();
+          }
+        } catch (error) {
+          alert('清空失败');
+        }
+      });
+      
+      // 关闭弹窗
+      modalClose.addEventListener('click', () => modal.classList.remove('visible'));
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('visible');
+      });
+      
+      // 工具函数
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+      
+      function formatDate(isoString) {
+        const date = new Date(isoString);
+        return date.toLocaleString('zh-CN', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+      
+      // 初始化
       checkHealth();
     })();
   </script>

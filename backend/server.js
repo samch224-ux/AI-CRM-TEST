@@ -1,15 +1,53 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const fs = require('fs').promises;
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const HISTORY_FILE = path.join(__dirname, 'data', 'history.json');
 
 // 中间件
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+
+// 确保数据目录存在
+async function ensureDataDir() {
+  const dataDir = path.dirname(HISTORY_FILE);
+  try {
+    await fs.access(dataDir);
+  } catch {
+    await fs.mkdir(dataDir, { recursive: true });
+  }
+}
+
+// 读取历史记录
+async function readHistory() {
+  try {
+    await ensureDataDir();
+    const data = await fs.readFile(HISTORY_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch {
+    return [];
+  }
+}
+
+// 保存历史记录
+async function saveHistory(record) {
+  const history = await readHistory();
+  history.unshift({
+    id: Date.now().toString(),
+    timestamp: new Date().toISOString(),
+    ...record
+  });
+  // 只保留最近 50 条
+  if (history.length > 50) history.pop();
+  await fs.writeFile(HISTORY_FILE, JSON.stringify(history, null, 2));
+  return history[0];
+}
 
 // 健康检查
 app.get('/health', (req, res) => {
@@ -65,6 +103,12 @@ app.post('/api/analyze', async (req, res) => {
     const data = await response.json();
     const analysis = data.choices[0]?.message?.content || '分析失败';
 
+    // 保存到历史记录
+    await saveHistory({
+      chatContent: chatContent.substring(0, 200) + (chatContent.length > 200 ? '...' : ''),
+      analysis
+    });
+
     res.json({
       success: true,
       analysis,
@@ -77,7 +121,44 @@ app.post('/api/analyze', async (req, res) => {
   }
 });
 
+// 获取历史记录
+app.get('/api/history', async (req, res) => {
+  try {
+    const history = await readHistory();
+    res.json({ success: true, history });
+  } catch (error) {
+    console.error('读取历史记录错误:', error);
+    res.status(500).json({ error: '读取历史记录失败' });
+  }
+});
+
+// 删除单条历史记录
+app.delete('/api/history/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    let history = await readHistory();
+    history = history.filter(item => item.id !== id);
+    await fs.writeFile(HISTORY_FILE, JSON.stringify(history, null, 2));
+    res.json({ success: true });
+  } catch (error) {
+    console.error('删除历史记录错误:', error);
+    res.status(500).json({ error: '删除失败' });
+  }
+});
+
+// 清空历史记录
+app.delete('/api/history', async (req, res) => {
+  try {
+    await fs.writeFile(HISTORY_FILE, JSON.stringify([], null, 2));
+    res.json({ success: true });
+  } catch (error) {
+    console.error('清空历史记录错误:', error);
+    res.status(500).json({ error: '清空失败' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 服务器运行在 http://localhost:${PORT}`);
   console.log(`📊 API 端点: http://localhost:${PORT}/api/analyze`);
+  console.log(`📚 历史记录: http://localhost:${PORT}/api/history`);
 });
