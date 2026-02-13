@@ -8,128 +8,487 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* Salesforce Lightning Design System Colors */
+      --sf-blue: #0176D3;
+      --sf-blue-hover: #014486;
+      --sf-blue-light: #E8F4FB;
+      --sf-blue-dark: #014486;
+      --sf-success: #04844B;
+      --sf-success-light: #E8F5E9;
+      --sf-error: #C23934;
+      --sf-error-light: #FEDED8;
+      --sf-warning: #FFB75D;
+      --sf-warning-light: #FFF4E5;
+      --sf-text-primary: #080707;
+      --sf-text-secondary: #3E3E3C;
+      --sf-text-tertiary: #706E6B;
+      --sf-border: #DDDBDA;
+      --sf-border-light: #E5E5E5;
+      --sf-bg-primary: #FFFFFF;
+      --sf-bg-secondary: #FAFAF9;
+      --sf-bg-tertiary: #F3F2F2;
+      --sf-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+      --sf-shadow-hover: 0 4px 8px 0 rgba(0, 0, 0, 0.12);
+    }
+
     body {
-      font-family: "Noto Sans SC", -apple-system, sans-serif;
+      font-family: "Salesforce Sans", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
       min-height: 100vh;
-      background: linear-gradient(145deg, #f0f4f8 0%, #e2e8f0 100%);
+      background: var(--sf-bg-tertiary);
+      padding: 0;
+      color: var(--sf-text-primary);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    /* Salesforce App Header */
+    .app-header {
+      background: var(--sf-bg-primary);
+      border-bottom: 1px solid var(--sf-border);
+      padding: 12px 24px;
+      box-shadow: var(--sf-shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-logo {
+      width: 32px;
+      height: 32px;
+      background: var(--sf-blue);
+      border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .app-title {
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--sf-text-primary);
+    }
+
+    /* Main Container */
+    .main-container {
+      max-width: 1200px;
+      margin: 0 auto;
       padding: 24px;
-      color: #1e293b;
     }
-    .container {
-      width: 100%;
-      max-width: 560px;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06);
-      padding: 32px;
+
+    .page-header {
+      margin-bottom: 24px;
     }
-    h1 { font-size: 1.5rem; font-weight: 600; color: #0f172a; margin-bottom: 8px; }
-    .subtitle { font-size: 0.875rem; color: #64748b; margin-bottom: 24px; }
-    label { display: block; font-size: 0.875rem; font-weight: 500; color: #334155; margin-bottom: 8px; }
-    textarea {
-      width: 100%;
-      min-height: 160px;
-      padding: 14px 16px;
-      font-family: inherit;
-      font-size: 0.9375rem;
-      line-height: 1.6;
-      color: #1e293b;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      resize: vertical;
-      transition: border-color 0.2s, box-shadow 0.2s;
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 300;
+      color: var(--sf-text-primary);
+      margin-bottom: 8px;
+      line-height: 1.25;
     }
-    textarea::placeholder { color: #94a3b8; }
-    textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
-    .btn-wrap { margin-top: 20px; }
-    button {
-      width: 100%;
-      padding: 12px 20px;
-      font-family: inherit;
-      font-size: 0.9375rem;
-      font-weight: 500;
-      color: #fff;
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.2s;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+
+    .page-description {
+      font-size: 14px;
+      color: var(--sf-text-secondary);
+      line-height: 1.5;
     }
-    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); }
-    button:active { transform: translateY(0); }
-    button:disabled { opacity: 0.85; cursor: not-allowed; transform: none; }
-    .result {
-      margin-top: 24px;
+
+    /* Salesforce Card */
+    .slds-card {
+      background: var(--sf-bg-primary);
+      border: 1px solid var(--sf-border);
+      border-radius: 4px;
+      box-shadow: var(--sf-shadow);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .slds-card__header {
+      padding: 16px 20px;
+      background: var(--sf-bg-secondary);
+      border-bottom: 1px solid var(--sf-border);
+    }
+
+    .slds-card__header-title {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--sf-text-primary);
+    }
+
+    .slds-card__body {
       padding: 20px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      font-size: 0.9375rem;
-      line-height: 1.65;
-      color: #334155;
-      display: none;
     }
-    .result.visible { display: block; }
-    .result.loading { color: #64748b; text-align: center; }
-    .result.error { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
-    .result.success { background: #f0fdf4; border-color: #bbf7d0; }
-    .result-title { font-weight: 600; color: #0f172a; margin-bottom: 10px; font-size: 0.9375rem; }
-    .result-content { white-space: pre-wrap; word-break: break-word; }
-    .spinner {
+
+    /* Form Elements */
+    .slds-form-element {
+      margin-bottom: 20px;
+    }
+
+    .slds-form-element__label {
+      display: block;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--sf-text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .slds-form-element__control {
+      position: relative;
+    }
+
+    .slds-textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--sf-text-primary);
+      background: var(--sf-bg-primary);
+      border: 1px solid var(--sf-border);
+      border-radius: 4px;
+      resize: vertical;
+      transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .slds-textarea::placeholder {
+      color: var(--sf-text-tertiary);
+    }
+
+    .slds-textarea:focus {
+      outline: none;
+      border-color: var(--sf-blue);
+      box-shadow: 0 0 0 3px var(--sf-blue-light);
+    }
+
+    /* Salesforce Button */
+    .slds-button {
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 400;
+      padding: 10px 20px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      line-height: 1.5;
+    }
+
+    .slds-button_brand {
+      background-color: var(--sf-blue);
+      color: #FFFFFF;
+      border-color: var(--sf-blue);
+    }
+
+    .slds-button_brand:hover {
+      background-color: var(--sf-blue-hover);
+      border-color: var(--sf-blue-hover);
+    }
+
+    .slds-button_brand:active {
+      background-color: var(--sf-blue-dark);
+      border-color: var(--sf-blue-dark);
+    }
+
+    .slds-button_brand:disabled {
+      background-color: var(--sf-bg-tertiary);
+      color: var(--sf-text-tertiary);
+      border-color: var(--sf-border);
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .slds-button_full-width {
+      width: 100%;
+    }
+
+    /* Result Card */
+    .result-card {
+      margin-top: 24px;
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .result-card.visible {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-card.success .slds-card__header {
+      background: var(--sf-success-light);
+      border-bottom-color: var(--sf-success);
+    }
+
+    .result-card.error .slds-card__header {
+      background: var(--sf-error-light);
+      border-bottom-color: var(--sf-error);
+    }
+
+    .result-card.loading .slds-card__header {
+      background: var(--sf-bg-secondary);
+    }
+
+    .result-content {
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--sf-text-primary);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .result-content ul,
+    .result-content ol {
+      margin-left: 20px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+
+    .result-content li {
+      margin-bottom: 8px;
+    }
+
+    /* Loading Animation */
+    .slds-spinner {
       display: inline-block;
+      position: relative;
       width: 20px;
       height: 20px;
-      border: 2px solid #e2e8f0;
-      border-top-color: #3b82f6;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-right: 8px;
-      vertical-align: middle;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .status-bar {
-      margin-top: 16px;
-      padding: 8px 12px;
-      background: #f1f5f9;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      color: #64748b;
+
+    .slds-spinner__dot {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--sf-blue);
+      border-radius: 50%;
+      animation: slds-spinner-dot 1.4s ease-in-out infinite;
+    }
+
+    .slds-spinner__dot:nth-child(1) {
+      left: 0;
+      animation-delay: 0s;
+    }
+
+    .slds-spinner__dot:nth-child(2) {
+      left: 8px;
+      animation-delay: 0.2s;
+    }
+
+    .slds-spinner__dot:nth-child(3) {
+      left: 16px;
+      animation-delay: 0.4s;
+    }
+
+    @keyframes slds-spinner-dot {
+      0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+      }
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .loading-content {
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      gap: 12px;
+      padding: 40px 20px;
+      color: var(--sf-text-secondary);
     }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
-    .status-dot.offline { background: #ef4444; }
+
+    /* Status Bar */
+    .slds-status-bar {
+      margin-top: 24px;
+      padding: 12px 16px;
+      background: var(--sf-bg-secondary);
+      border: 1px solid var(--sf-border);
+      border-radius: 4px;
+      font-size: 13px;
+      color: var(--sf-text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slds-status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--sf-success);
+      flex-shrink: 0;
+    }
+
+    .slds-status-indicator.offline {
+      background: var(--sf-error);
+    }
+
+    /* Icon Styles */
+    .slds-icon {
+      width: 16px;
+      height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .main-container {
+        padding: 16px;
+      }
+
+      .app-header {
+        padding: 10px 16px;
+      }
+
+      .app-title {
+        font-size: 16px;
+      }
+
+      .page-title {
+        font-size: 24px;
+      }
+
+      .slds-card__body {
+        padding: 16px;
+      }
+
+      .slds-card__header {
+        padding: 12px 16px;
+      }
+
+      .slds-textarea {
+        min-height: 160px;
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main-container {
+        padding: 12px;
+      }
+
+      .page-title {
+        font-size: 22px;
+      }
+
+      .slds-card__body {
+        padding: 12px;
+      }
+
+      .slds-card__header {
+        padding: 10px 12px;
+      }
+    }
+
+    /* Text Selection */
+    ::selection {
+      background: var(--sf-blue-light);
+      color: var(--sf-text-primary);
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>客户聊天记录分析</h1>
-    <p class="subtitle">粘贴或输入聊天内容，AI 自动分析摘要与要点</p>
-    
-    <label for="chat-input">聊天记录</label>
-    <textarea id="chat-input" placeholder="例如：&#10;客户：你好，我想咨询一下产品价格&#10;客服：您好，请问您关注的是哪款产品？&#10;客户：A 系列标准版，多少钱？"></textarea>
-    
-    <div class="btn-wrap">
-      <button type="button" id="analyze-btn">🚀 AI 分析</button>
+  <!-- Salesforce App Header -->
+  <header class="app-header">
+    <div class="app-header-content">
+      <div class="app-logo">AI</div>
+      <div class="app-title">客户聊天记录分析</div>
     </div>
-    
-    <div id="result" class="result">
-      <div class="result-title">分析结果</div>
-      <div class="result-content" id="result-content"></div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    <div class="page-header">
+      <h1 class="page-title">AI 聊天分析</h1>
+      <p class="page-description">粘贴或输入客户聊天内容，AI 将自动分析并提取关键信息与摘要</p>
     </div>
-    
-    <div class="status-bar">
-      <span class="status-dot" id="status-dot"></span>
+
+    <!-- Input Card -->
+    <div class="slds-card">
+      <div class="slds-card__header">
+        <h2 class="slds-card__header-title">聊天记录输入</h2>
+      </div>
+      <div class="slds-card__body">
+        <div class="slds-form-element">
+          <label class="slds-form-element__label" for="chat-input">
+            聊天内容
+          </label>
+          <div class="slds-form-element__control">
+            <textarea 
+              class="slds-textarea" 
+              id="chat-input" 
+              placeholder="例如：&#10;客户：你好，我想咨询一下产品价格&#10;客服：您好，请问您关注的是哪款产品？&#10;客户：A 系列标准版，多少钱？&#10;客服：A 系列标准版的价格是 2999 元..."
+            ></textarea>
+          </div>
+        </div>
+        <button 
+          type="button" 
+          id="analyze-btn" 
+          class="slds-button slds-button_brand slds-button_full-width"
+        >
+          <span class="slds-icon">⚡</span>
+          <span>开始分析</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Result Card -->
+    <div id="result" class="slds-card result-card">
+      <div class="slds-card__header" id="result-header">
+        <h2 class="slds-card__header-title">
+          <span class="slds-icon" id="result-icon">📊</span>
+          <span style="margin-left: 8px;">分析结果</span>
+        </h2>
+      </div>
+      <div class="slds-card__body">
+        <div class="result-content" id="result-content"></div>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="slds-status-bar">
+      <span class="slds-status-indicator" id="status-dot"></span>
       <span id="status-text">连接中...</span>
     </div>
-  </div>
+  </main>
 
   <script>
     (function () {
@@ -138,6 +497,8 @@
       const analyzeBtn = document.getElementById('analyze-btn');
       const resultEl = document.getElementById('result');
       const resultContent = document.getElementById('result-content');
+      const resultHeader = document.getElementById('result-header');
+      const resultIcon = document.getElementById('result-icon');
       const statusDot = document.getElementById('status-dot');
       const statusText = document.getElementById('status-text');
 
@@ -147,7 +508,9 @@
           if (response.ok) {
             statusDot.classList.remove('offline');
             statusText.textContent = 'AI 服务已连接';
-          } else { throw new Error('服务异常'); }
+          } else {
+            throw new Error('服务异常');
+          }
         } catch (error) {
           statusDot.classList.add('offline');
           statusText.textContent = 'AI 服务未连接 - 请启动后端服务';
@@ -156,11 +519,21 @@
 
       analyzeBtn.addEventListener('click', async function () {
         const text = chatInput.value.trim();
-        if (!text) { showResult('请先输入或粘贴客户聊天记录', 'error'); return; }
+        if (!text) {
+          showResult('请先输入或粘贴客户聊天记录', 'error', '⚠️');
+          return;
+        }
 
         analyzeBtn.disabled = true;
-        analyzeBtn.textContent = '分析中...';
-        showResult('<span class="spinner"></span>正在调用 Kimi AI 分析，请稍候...', 'loading');
+        analyzeBtn.innerHTML = `
+          <span class="slds-spinner">
+            <span class="slds-spinner__dot"></span>
+            <span class="slds-spinner__dot"></span>
+            <span class="slds-spinner__dot"></span>
+          </span>
+          <span>分析中...</span>
+        `;
+        showResult('', 'loading', '⏳');
 
         try {
           const response = await fetch(`${API_BASE}/api/analyze`, {
@@ -170,18 +543,36 @@
           });
           const data = await response.json();
           if (!response.ok) throw new Error(data.error || '分析失败');
-          showResult(data.analysis, 'success');
+          showResult(data.analysis, 'success', '✓');
         } catch (error) {
-          showResult('❌ ' + error.message + '\n\n请检查：\n1. 后端服务是否已启动\n2. 网络连接是否正常', 'error');
+          showResult('错误：' + error.message + '\n\n请检查：\n1. 后端服务是否已启动\n2. 网络连接是否正常', 'error', '✕');
         } finally {
           analyzeBtn.disabled = false;
-          analyzeBtn.textContent = '🚀 AI 分析';
+          analyzeBtn.innerHTML = '<span class="slds-icon">⚡</span><span>开始分析</span>';
         }
       });
 
-      function showResult(content, type) {
-        resultEl.className = 'result visible ' + type;
-        resultContent.innerHTML = content;
+      function showResult(content, type, icon) {
+        resultEl.className = 'slds-card result-card visible ' + type;
+        resultIcon.textContent = icon || '📊';
+
+        if (type === 'loading') {
+          resultContent.innerHTML = `
+            <div class="loading-content">
+              <div class="slds-spinner">
+                <span class="slds-spinner__dot"></span>
+                <span class="slds-spinner__dot"></span>
+                <span class="slds-spinner__dot"></span>
+              </div>
+              <span>正在调用 Kimi AI 分析，请稍候...</span>
+            </div>
+          `;
+        } else {
+          resultContent.textContent = content;
+        }
+
+        // 滚动到结果区域
+        resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
 
       checkHealth();
